@@ -10,26 +10,19 @@ FATF_SOURCE_URL = "https://www.fatf-gafi.org/en/publications/High-risk-and-other
 
 @app.get("/check")
 def check_country(country: str = Query(..., description="Country to check")):
-    try:
-        response = requests.get(FATF_SOURCE_URL)
-        if response.status_code != 200:
-            return JSONResponse(
-                status_code=500,
-                content={"error": "Failed to fetch FATF data."}
-            )
+    grey_listed_countries = [
+        "Turkey", "South Africa", "Nigeria", "Philippines", "Kenya", "Barbados",
+        "Burkina Faso", "Cameroon", "Croatia", "Democratic Republic of the Congo",
+        "Haiti", "Jamaica", "Mali", "Mozambique", "Senegal", "South Sudan",
+        "Syria", "Tanzania", "Uganda", "United Arab Emirates", "Vietnam", "Yemen"
+    ]
 
-        content = response.text.lower()
-        is_greylisted = country.lower() in content
+    is_greylisted = country.strip().lower() in [c.lower() for c in grey_listed_countries]
 
-        return {
-            "country": country,
-            "status": "Greylisted" if is_greylisted else "Not Greylisted",
-            "last_updated": "2025-02-21",
-            "source_url": FATF_SOURCE_URL
-        }
+    return {
+        "country": country,
+        "status": "Greylisted" if is_greylisted else "Not Greylisted",
+        "last_updated": "2025-02-21",
+        "source_url": "https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions/increased-monitoring-february-2025.html"
+    }
 
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"error": str(e)}
-        )
